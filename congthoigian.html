@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Cộng Giờ Thông Minh</title>
+<meta name="theme-color" content="#0e0f12" />
+<style>
+  :root{
+    --bg1:#0e0f12;
+    --bg2:#151824;
+    --card:rgba(255,255,255,0.08);
+    --card-strong:rgba(255,255,255,0.12);
+    --text:#eef2ff;
+    --muted:#b6bdd6;
+    --accent:#F4C542;     /* vàng champagne */
+    --accent-2:#8B5CF6;   /* tím điểm xuyết */
+    --ok:#22c55e;
+    --err:#ef4444;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --radius:18px;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    color:var(--text);
+    background:
+      radial-gradient(1200px 800px at 110% -10%, #342b59 0%, transparent 60%),
+      radial-gradient(900px 600px at -10% 120%, #2a3a46 0%, transparent 55%),
+      linear-gradient(180deg, var(--bg1), var(--bg2));
+    display:flex; align-items:center; justify-content:center;
+    padding:18px;
+  }
+
+  .app{
+    width:100%;
+    max-width:440px;
+    background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:28px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+    padding:16px 14px 18px;
+  }
+
+  .header{
+    display:flex; align-items:center; gap:12px; padding:4px 8px 10px;
+  }
+  .badge{
+    width:40px; height:40px; border-radius:12px;
+    background: linear-gradient(135deg, var(--accent), #ffd976);
+    color:#1b1512; display:grid; place-items:center; font-weight:800;
+    box-shadow:0 8px 18px rgba(244,197,66,.35);
+  }
+  h1{font-size:20px; margin:0; line-height:1.1}
+  .subtitle{color:var(--muted); font-size:13px; margin-top:2px}
+
+  .seg{
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:14px; padding:6px; display:grid;
+    grid-template-columns:1fr 1fr; gap:6px; margin:8px 6px 12px;
+  }
+  .seg button{
+    border:0; padding:10px 12px; border-radius:10px; color:var(--muted);
+    background:transparent; font-weight:700; letter-spacing:.2px;
+  }
+  .seg button.active{
+    color:#0f0b05; background: linear-gradient(135deg, var(--accent), #ffd976);
+    box-shadow:0 6px 16px rgba(244,197,66,.35);
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:var(--radius);
+    padding:12px; margin:10px 6px;
+  }
+  .row{display:flex; gap:10px; align-items:center}
+  .row .grow{flex:1}
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+  input[type="time"], input[type="text"], input[type="number"]{
+    width:100%; padding:12px 13px; border-radius:12px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.06); color:var(--text);
+    outline:none; font-size:16px;
+  }
+  input[disabled]{opacity:.6}
+
+  .hint{font-size:12px; color:var(--muted); margin-top:6px}
+  .chips{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px;
+  }
+  .chip{
+    border:1px solid rgba(255,255,255,.16);
+    background:linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+    color:var(--text); padding:10px 12px; border-radius:12px;
+    text-align:center; font-weight:700; font-size:15px;
+  }
+  .chip:active{transform:scale(.98)}
+
+  .cta{
+    display:flex; gap:10px; margin-top:10px;
+  }
+  .btn{
+    flex:1; border:0; padding:12px 14px; border-radius:12px; font-weight:800;
+    letter-spacing:.2px; font-size:16px;
+  }
+  .btn-primary{
+    color:#0b0715; background:linear-gradient(135deg, var(--accent-2), #c4b5fd);
+    box-shadow:0 10px 18px rgba(139,92,246,.35);
+  }
+  .btn-ghost{
+    color:var(--text); background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.14);
+  }
+
+  .result{
+    text-align:center; padding:14px 10px 6px;
+  }
+  .result .big{
+    font-size:44px; font-weight:900; letter-spacing:1px;
+    background:linear-gradient(180deg, #fff, #e9e7ff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .result .date{color:var(--muted); font-size:13px; margin-top:4px}
+  .pill{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700;
+    color:#0f0b05; background:linear-gradient(135deg, var(--accent), #ffd976);
+    margin-top:10px;
+  }
+
+  .history{margin-top:8px}
+  .history h3{font-size:13px; color:var(--muted); margin:0 0 6px 2px}
+  .list{display:flex; flex-direction:column; gap:8px; max-height:160px; overflow:auto}
+  .item{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--card-strong); border:1px solid rgba(255,255,255,.12);
+    border-radius:12px; padding:10px 12px; font-size:14px;
+  }
+  .item b{font-size:16px}
+  .err{color:var(--err); font-size:12px; margin-top:6px}
+  .ok{color:var(--ok); font-size:12px; margin-top:6px}
+
+  @media (min-width:480px){ .chips{grid-template-columns:repeat(4,1fr)} }
+</style>
+</head>
+<body>
+  <main class="app" role="application">
+    <header class="header">
+      <div class="badge">⏱</div>
+      <div>
+        <h1>Cộng Giờ Thông Minh</h1>
+        <div class="subtitle">Nguyễn Quốc Lộc</div>
+      </div>
+    </header>
+
+    <!-- Chọn chế độ -->
+    <section class="seg" aria-label="Chọn chế độ giờ gốc">
+      <button id="modeNow" class="active" type="button">Giờ thực</button>
+      <button id="modeCustom" type="button">Tự nhập</button>
+    </section>
+
+    <!-- Giờ gốc -->
+    <section class="card">
+      <label for="baseTime">Giờ gốc</label>
+      <div class="row">
+        <input id="baseTime" type="time" step="60" class="grow" disabled />
+        <button id="btnNow" class="btn btn-ghost" type="button" aria-label="Lấy giờ hiện tại">Bây giờ</button>
+      </div>
+      <div id="baseHint" class="hint">Đang dùng <b>giờ hệ thống</b> và tự cập nhật.</div>
+    </section>
+
+    <!-- Gợi ý nhanh -->
+    <section class="card" aria-label="Gợi ý cộng nhanh">
+      <label>Gợi ý cộng nhanh</label>
+      <div class="chips">
+  <button class="chip" data-h="2" data-m="15">+2h15</button>
+  <button class="chip" data-h="2" data-m="30">+2h30</button>
+  <button class="chip" data-h="3" data-m="15">+3h15</button>
+  <button class="chip" data-h="3" data-m="30">+3h30</button>
+  <button class="chip" data-h="4" data-m="15">+4h15</button>
+  <button class="chip" data-h="4" data-m="30">+4h30</button>
+</div>
+
+      <div class="row" style="margin-top:10px">
+        <input id="quickText" type="text" inputmode="latin" placeholder="Nhập nhanh: 3h15, 2h30, 90p, 1:45, 3g30..." class="grow" />
+        <button id="btnQuick" class="btn btn-primary" type="button">Cộng</button>
+      </div>
+      <div id="quickMsg" class="hint"></div>
+    </section>
+
+    <!-- Cộng tuỳ chỉnh -->
+    <section class="card" aria-label="Cộng tuỳ chỉnh">
+      <label>Cộng tuỳ chỉnh</label>
+      <div class="row">
+        <div class="grow">
+          <input id="addHours" type="number" min="0" max="999" placeholder="Giờ (h)" />
+        </div>
+        <div class="grow">
+          <input id="addMins" type="number" min="0" max="999" placeholder="Phút (p)" />
+        </div>
+      </div>
+      <div class="cta">
+        <button id="btnAdd" class="btn btn-primary" type="button">Cộng</button>
+        <button id="btnClear" class="btn btn-ghost" type="button">Xoá</button>
+      </div>
+    </section>
+
+    <!-- Kết quả -->
+    <section class="card result" aria-live="polite" aria-atomic="true">
+      <div class="big" id="resTime">--:--</div>
+      <div class="date" id="resDate">Chưa có kết quả</div>
+      <div class="pill" id="resMeta" hidden>+0h00 từ giờ gốc</div>
+    </section>
+
+    <!-- Lịch sử -->
+    <section class="card history">
+      <h3>Lịch sử gần đây</h3>
+      <div class="list" id="historyList" role="list"></div>
+    </section>
+  </main>
+
+<script>
+(function(){
+  const modeNowBtn = document.getElementById('modeNow');
+  const modeCustomBtn = document.getElementById('modeCustom');
+  const baseTimeInput = document.getElementById('baseTime');
+  const baseHint = document.getElementById('baseHint');
+  const btnNow = document.getElementById('btnNow');
+
+  const chips = Array.from(document.querySelectorAll('.chip'));
+  const quickText = document.getElementById('quickText');
+  const btnQuick = document.getElementById('btnQuick');
+  const quickMsg = document.getElementById('quickMsg');
+
+  const addHours = document.getElementById('addHours');
+  const addMins = document.getElementById('addMins');
+  const btnAdd = document.getElementById('btnAdd');
+  const btnClear = document.getElementById('btnClear');
+
+  const resTime = document.getElementById('resTime');
+  const resDate = document.getElementById('resDate');
+  const resMeta = document.getElementById('resMeta');
+  const historyList = document.getElementById('historyList');
+
+  let mode = 'now'; // 'now' | 'custom'
+  let tickTimer = null;
+  let history = [];
+
+  // --- Helpers ---
+  const pad = n => String(n).padStart(2,'0');
+
+  function formatTime(d){
+    return pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function viWeekday(n){
+    return ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'][n];
+  }
+  function formatDateVi(d){
+    return `${viWeekday(d.getDay())}, ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+  }
+  function dayRelation(base, target){
+    // 00:00 based comparison
+    const b = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+    const t = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+    const diff = Math.round((t - b)/86400000);
+    if(diff === 0) return 'Hôm nay';
+    if(diff === 1) return 'Ngày mai';
+    if(diff === 2) return 'Ngày kia';
+    if(diff === -1) return 'Hôm qua';
+    return diff > 0 ? `Sau ${diff} ngày` : `Trước ${Math.abs(diff)} ngày`;
+  }
+
+  function getBaseDate(){
+    if(mode === 'now') return new Date();
+    const val = baseTimeInput.value || '00:00';
+    const [h,m] = val.split(':').map(Number);
+    const now = new Date();
+    now.setHours(h||0, m||0, 0, 0);
+    return now;
+  }
+
+  function addTime(base, hh=0, mm=0){
+    const d = new Date(base.getTime() + (Number(hh||0)*60 + Number(mm||0))*60000);
+    return d;
+  }
+
+  function paintResult(base, plusH, plusM, result){
+    resTime.textContent = formatTime(result);
+    resDate.textContent = `${dayRelation(base, result)} • ${formatDateVi(result)}`;
+    resMeta.textContent = `+${pad(plusH)}h${pad(plusM)} từ giờ gốc ${formatTime(base)}`;
+    resMeta.hidden = false;
+  }
+
+  function pushHistory(base, h, m, result){
+    const row = document.createElement('div');
+    row.className = 'item';
+    row.innerHTML = `
+      <div><span style="color:var(--muted); font-size:12px">+${pad(h)}h${pad(m)}</span><br><b>${formatTime(result)}</b></div>
+      <div style="text-align:right;">
+        <div style="color:var(--muted); font-size:12px">${dayRelation(base, result)}</div>
+        <div style="font-size:12px; color:var(--muted)">${formatDateVi(result)}</div>
+      </div>`;
+    historyList.prepend(row);
+    history.unshift({base: base.toISOString(), h, m, res: result.toISOString()});
+    if(history.length > 20){
+      history.pop();
+      historyList.removeChild(historyList.lastChild);
+    }
+  }
+
+  // Parse quick text like "3h15", "2h30", "90p", "1:45", "3g30"
+  function parseDuration(text){
+    if(!text) return null;
+    const s = text.toLowerCase().replace(/\s+/g,'').replace(',',':');
+    // 1) mm or m/p/ph only: "90p" or "90m"
+    let m = s.match(/^(\d+)(p|ph|m)$/i);
+    if(m) return {h: Math.floor(+m[1]/60), m: (+m[1])%60};
+    // 2) h with optional minutes: "3h15", "3g30", "3h", "3g"
+    m = s.match(/^(\d+)(h|g)(\d{1,2})?$/i);
+    if(m) return {h:+m[1], m: m[3]? +m[3] : 0};
+    // 3) clock style: "1:45"
+    m = s.match(/^(\d+):(\d{1,2})$/);
+    if(m) return {h:+m[1], m:+m[2]};
+    // 4) pure number fallback interpret as minutes "45" => 45p
+    m = s.match(/^(\d{1,4})$/);
+    if(m) return {h: Math.floor(+m[1]/60), m: (+m[1])%60};
+    return null;
+  }
+
+  function applyPlus(h, m){
+    const base = getBaseDate();
+    const result = addTime(base, h, m);
+    paintResult(base, h, m, result);
+    pushHistory(base, h, m, result);
+    quickMsg.textContent = '';
+  }
+
+  // --- Events ---
+  function setMode(newMode){
+    mode = newMode;
+    if(mode === 'now'){
+      modeNowBtn.classList.add('active'); modeCustomBtn.classList.remove('active');
+      baseTimeInput.disabled = true;
+      baseHint.innerHTML = 'Đang dùng <b>giờ hệ thống</b> và tự cập nhật.';
+      if(tickTimer) clearInterval(tickTimer);
+      const setNow = ()=>{ 
+        const n = new Date(); 
+        baseTimeInput.value = `${pad(n.getHours())}:${pad(n.getMinutes())}`;
+      };
+      setNow();
+      tickTimer = setInterval(setNow, 1000);
+    }else{
+      modeCustomBtn.classList.add('active'); modeNowBtn.classList.remove('active');
+      baseTimeInput.disabled = false;
+      baseHint.innerHTML = 'Bạn có thể <b>nhập giờ gốc</b> theo ý bạn.';
+      if(tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+      if(!baseTimeInput.value) baseTimeInput.value = '09:10';
+    }
+  }
+
+  modeNowBtn.addEventListener('click', ()=> setMode('now'));
+  modeCustomBtn.addEventListener('click', ()=> setMode('custom'));
+  btnNow.addEventListener('click', ()=>{
+    const n = new Date(); 
+    baseTimeInput.value = `${pad(n.getHours())}:${pad(n.getMinutes())}`;
+    setMode('now');
+  });
+
+  chips.forEach(ch => ch.addEventListener('click', ()=>{
+    applyPlus(+ch.dataset.h, +ch.dataset.m);
+  }));
+
+  btnQuick.addEventListener('click', ()=>{
+    const parsed = parseDuration(quickText.value.trim());
+    if(!parsed){
+      quickMsg.className='err';
+      quickMsg.textContent = 'Không nhận dạng được. Ví dụ: 3h15, 2h30, 90p, 1:45, 3g30';
+      return;
+    }
+    quickMsg.className='ok';
+    quickMsg.textContent = `Đã cộng +${pad(parsed.h)}h${pad(parsed.m)}.`;
+    applyPlus(parsed.h, parsed.m);
+    quickText.value='';
+  });
+
+  btnAdd.addEventListener('click', ()=>{
+    const h = Math.max(0, parseInt(addHours.value||'0',10));
+    const m = Math.max(0, parseInt(addMins.value||'0',10));
+    if(h===0 && m===0){
+      quickMsg.className='err';
+      quickMsg.textContent='Nhập số giờ hoặc phút > 0.';
+      return;
+    }
+    applyPlus(h, m);
+  });
+
+  btnClear.addEventListener('click', ()=>{
+    addHours.value=''; addMins.value=''; quickText.value='';
+    resMeta.hidden = true;
+    resTime.textContent='--:--'; resDate.textContent='Chưa có kết quả';
+    quickMsg.textContent='';
+    historyList.innerHTML=''; history=[];
+  });
+
+  // --- Init ---
+  setMode('now');
+  // Mặc định hiển thị trước 3 gợi ý hay dùng
+  // (không tính tự động, chỉ hiển thị khi người dùng bấm)
+})();
+</script>
+</body>
+</html>
