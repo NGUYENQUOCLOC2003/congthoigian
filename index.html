@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Cộng Giờ Thông Minh</title>
 <meta name="theme-color" content="#0e0f12" />
+
+<!-- Favicon / App icon -->
+<link rel="icon" href="https://play-lh.googleusercontent.com/ijf5w3QvpxyLA4zGI7w6W29VqEswPAU2g67WpwiebRN3yO72qxPLPfoddpHOM_GPYs8" />
+<link rel="apple-touch-icon" href="https://play-lh.googleusercontent.com/ijf5w3QvpxyLA4zGI7w6W29VqEswPAU2g67WpwiebRN3yO72qxPLPfoddpHOM_GPYs8" />
+<link rel="shortcut icon" href="https://play-lh.googleusercontent.com/ijf5w3QvpxyLA4zGI7w6W29VqEswPAU2g67WpwiebRN3yO72qxPLPfoddpHOM_GPYs8" />
+
 <style>
   :root{
     --bg1:#0e0f12;
@@ -23,6 +29,7 @@
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
+
   body{
     margin:0;
     font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
@@ -31,13 +38,17 @@
       radial-gradient(1200px 800px at 110% -10%, #342b59 0%, transparent 60%),
       radial-gradient(900px 600px at -10% 120%, #2a3a46 0%, transparent 55%),
       linear-gradient(180deg, var(--bg1), var(--bg2));
-    display:flex; align-items:center; justify-content:center;
-    padding:18px;
+    display:block;
+    padding:0;
+    /* đẩy xuống tránh thanh địa chỉ (đã giảm theo ý anh) */
+    padding-top: calc(env(safe-area-inset-top, 0px) + 5px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
   }
 
   .app{
     width:100%;
     max-width:440px;
+    margin:0 auto; /* căn giữa ngang */
     background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
     border:1px solid rgba(255,255,255,.12);
     border-radius:28px;
@@ -86,7 +97,7 @@
     width:100%; padding:12px 13px; border-radius:12px;
     border:1px solid rgba(255,255,255,.14);
     background:rgba(255,255,255,.06); color:var(--text);
-    outline:none; font-size:16px;
+    outline:none; font-size:16px; /* tránh iOS auto-zoom */
   }
   input[disabled]{opacity:.6}
 
@@ -102,9 +113,7 @@
   }
   .chip:active{transform:scale(.98)}
 
-  .cta{
-    display:flex; gap:10px; margin-top:10px;
-  }
+  .cta{display:flex; gap:10px; margin-top:10px;}
   .btn{
     flex:1; border:0; padding:12px 14px; border-radius:12px; font-weight:800;
     letter-spacing:.2px; font-size:16px;
@@ -118,9 +127,7 @@
     border:1px solid rgba(255,255,255,.14);
   }
 
-  .result{
-    text-align:center; padding:14px 10px 6px;
-  }
+  .result{text-align:center; padding:14px 10px 6px;}
   .result .big{
     font-size:44px; font-weight:900; letter-spacing:1px;
     background:linear-gradient(180deg, #fff, #e9e7ff);
@@ -179,13 +186,13 @@
     <section class="card" aria-label="Gợi ý cộng nhanh">
       <label>Gợi ý cộng nhanh</label>
       <div class="chips">
-  <button class="chip" data-h="2" data-m="15">+2h15</button>
-  <button class="chip" data-h="2" data-m="30">+2h30</button>
-  <button class="chip" data-h="3" data-m="15">+3h15</button>
-  <button class="chip" data-h="3" data-m="30">+3h30</button>
-  <button class="chip" data-h="4" data-m="15">+4h15</button>
-  <button class="chip" data-h="4" data-m="30">+4h30</button>
-</div>
+        <button class="chip" data-h="2" data-m="15">+2h15</button>
+        <button class="chip" data-h="2" data-m="30">+2h30</button>
+        <button class="chip" data-h="3" data-m="15">+3h15</button>
+        <button class="chip" data-h="3" data-m="30">+3h30</button>
+        <button class="chip" data-h="4" data-m="15">+4h15</button>
+        <button class="chip" data-h="4" data-m="30">+4h30</button>
+      </div>
 
       <div class="row" style="margin-top:10px">
         <input id="quickText" type="text" inputmode="latin" placeholder="Nhập nhanh: 3h15, 2h30, 90p, 1:45, 3g30..." class="grow" />
@@ -247,25 +254,18 @@
   const resDate = document.getElementById('resDate');
   const resMeta = document.getElementById('resMeta');
   const historyList = document.getElementById('historyList');
+  const resultCard = document.querySelector('.result');
 
   let mode = 'now'; // 'now' | 'custom'
   let tickTimer = null;
   let history = [];
 
-  // --- Helpers ---
   const pad = n => String(n).padStart(2,'0');
+  const formatTime = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+  const viWeekday = n => ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'][n];
+  const formatDateVi = d => `${viWeekday(d.getDay())}, ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
 
-  function formatTime(d){
-    return pad(d.getHours()) + ':' + pad(d.getMinutes());
-  }
-  function viWeekday(n){
-    return ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'][n];
-  }
-  function formatDateVi(d){
-    return `${viWeekday(d.getDay())}, ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
-  }
   function dayRelation(base, target){
-    // 00:00 based comparison
     const b = new Date(base.getFullYear(), base.getMonth(), base.getDate());
     const t = new Date(target.getFullYear(), target.getMonth(), target.getDate());
     const diff = Math.round((t - b)/86400000);
@@ -286,8 +286,7 @@
   }
 
   function addTime(base, hh=0, mm=0){
-    const d = new Date(base.getTime() + (Number(hh||0)*60 + Number(mm||0))*60000);
-    return d;
+    return new Date(base.getTime() + (Number(hh||0)*60 + Number(mm||0))*60000);
   }
 
   function paintResult(base, plusH, plusM, result){
@@ -314,23 +313,13 @@
     }
   }
 
-  // Parse quick text like "3h15", "2h30", "90p", "1:45", "3g30"
-  function parseDuration(text){
-    if(!text) return null;
-    const s = text.toLowerCase().replace(/\s+/g,'').replace(',',':');
-    // 1) mm or m/p/ph only: "90p" or "90m"
-    let m = s.match(/^(\d+)(p|ph|m)$/i);
-    if(m) return {h: Math.floor(+m[1]/60), m: (+m[1])%60};
-    // 2) h with optional minutes: "3h15", "3g30", "3h", "3g"
-    m = s.match(/^(\d+)(h|g)(\d{1,2})?$/i);
-    if(m) return {h:+m[1], m: m[3]? +m[3] : 0};
-    // 3) clock style: "1:45"
-    m = s.match(/^(\d+):(\d{1,2})$/);
-    if(m) return {h:+m[1], m:+m[2]};
-    // 4) pure number fallback interpret as minutes "45" => 45p
-    m = s.match(/^(\d{1,4})$/);
-    if(m) return {h: Math.floor(+m[1]/60), m: (+m[1])%60};
-    return null;
+  // Cuộn mượt tới thẻ Kết quả
+  function scrollToResult(){
+    if(!resultCard) return;
+    // trừ nhẹ 12px để kết quả “lộ” ra đẹp hơn
+    const rect = resultCard.getBoundingClientRect();
+    const y = window.scrollY + rect.top - 12;
+    window.scrollTo({ top: y, behavior: 'smooth' });
   }
 
   function applyPlus(h, m){
@@ -339,9 +328,9 @@
     paintResult(base, h, m, result);
     pushHistory(base, h, m, result);
     quickMsg.textContent = '';
+    scrollToResult(); // <<< tự cuộn tới kết quả
   }
 
-  // --- Events ---
   function setMode(newMode){
     mode = newMode;
     if(mode === 'now'){
@@ -406,12 +395,26 @@
     resTime.textContent='--:--'; resDate.textContent='Chưa có kết quả';
     quickMsg.textContent='';
     historyList.innerHTML=''; history=[];
+    // sau khi xóa, cuộn về đầu trang cho tiện nhập lại
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  // --- Init ---
+  // Parse quick text like "3h15", "2h30", "90p", "1:45", "3g30"
+  function parseDuration(text){
+    if(!text) return null;
+    const s = text.toLowerCase().replace(/\s+/g,'').replace(',',':');
+    let m = s.match(/^(\d+)(p|ph|m)$/i);
+    if(m) return {h: Math.floor(+m[1]/60), m: (+m[1])%60};
+    m = s.match(/^(\d+)(h|g)(\d{1,2})?$/i);
+    if(m) return {h:+m[1], m: m[3]? +m[3] : 0};
+    m = s.match(/^(\d+):(\d{1,2})$/);
+    if(m) return {h:+m[1], m:+m[2]};
+    m = s.match(/^(\d{1,4})$/);
+    if(m) return {h: Math.floor(+m[1]/60), m: (+m[1])%60};
+    return null;
+  }
+
   setMode('now');
-  // Mặc định hiển thị trước 3 gợi ý hay dùng
-  // (không tính tự động, chỉ hiển thị khi người dùng bấm)
 })();
 </script>
 </body>
